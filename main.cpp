@@ -2,6 +2,7 @@
 #include "calculator_functions.h"
 using namespace std;
 
+// Desc: Display menu
 void displayMenu() {
     cout << " Menu Options " << endl;
     cout << "1: Calculator \n" << endl;
