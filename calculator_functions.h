@@ -3,9 +3,18 @@
 //
 
 #include <iostream>
-#include <sstream>
 using namespace std;
 
+// Used for returning integer pairs
+struct IntPair {
+    // Default values of 0
+    int valueOne = 0;
+    int valueTwo = 0;
+};
+
+// Desc: Display for the calculator menu
+// Input: N/A
+// Output: N/A
 void calculatorMenuDisplay() {
     cout << "Calculator Menu Options" << endl;
     cout << "1: Addition" << endl;
@@ -16,68 +25,70 @@ void calculatorMenuDisplay() {
 
 }
 
+// Desc: Gets two inputs for the user
+// Input: N/A
+// Output: IntPair
+IntPair getTwoValuesPrompt() {
+    IntPair enteredValues;
+
+    cout << "Enter first value" << endl;
+    cin >> enteredValues.valueOne;
+    cout << "Enter second value" << endl;
+    cin >> enteredValues.valueTwo;
+
+    return enteredValues;
+}
+
 // Desc: Ask user for two values and prints the sum of them
+// Input: N/A
+// Output: N/A
 void addition() {
-    int valueOne, valueTwo;
 
     // Get both input
-    cout << "Enter first value" << endl;
-    cin >> valueOne;
-    cout << "Enter second value" << endl;
-    cin >> valueTwo;
+    IntPair enteredValues = getTwoValuesPrompt();
 
-    int addition = valueOne + valueTwo;
+    int addition = enteredValues.valueOne + enteredValues.valueTwo;
 
-    cout << valueOne << " + " << valueTwo << " = " << addition <<  "\n" << endl;
+    cout << enteredValues.valueOne << " + " << enteredValues.valueTwo << " = " << addition <<  "\n" << endl;
 }
 
 // Desc: Ask user for two values and prints the sum of them
+// Input: N/A
+// Output: N/A
 void subtraction() {
-    int valueOne, valueTwo;
+    IntPair enteredValues = getTwoValuesPrompt();
 
-    // Get both input
-    cout << "Enter first value" << endl;
-    cin >> valueOne;
-    cout << "Enter second value" << endl;
-    cin >> valueTwo;
+    int subtraction = enteredValues.valueOne - enteredValues.valueTwo;
 
-    int subtraction = valueOne - valueTwo;
-
-    cout << valueOne << " - " << valueTwo << " = " << subtraction <<  "\n" << endl;
+    cout << enteredValues.valueOne << " - " << enteredValues.valueTwo << " = " << subtraction <<  "\n" << endl;
 }
 
 // Desc: Ask user for two values and prints the sum of them
+// Input: N/A
+// Output: N/A
 void multiplication() {
-    int valueOne, valueTwo;
+    IntPair enteredValues = getTwoValuesPrompt();
 
-    // Get both input
-    cout << "Enter first value" << endl;
-    cin >> valueOne;
-    cout << "Enter second value" << endl;
-    cin >> valueTwo;
+    int multiplication = enteredValues.valueOne * enteredValues.valueTwo;
 
-    int multiplication = valueOne * valueTwo;
-
-    cout << valueOne << " + " << valueTwo << " = " << multiplication <<  "\n" << endl;
+    cout << enteredValues.valueOne << " + " << enteredValues.valueTwo << " = " << multiplication <<  "\n" << endl;
 }
 
 // Desc: Ask user for two values and prints the sum of them
+// Input: N/A
+// Output: N/A
 void division() {
-    int dividend, divisor;
+    IntPair enteredValues = getTwoValuesPrompt();
 
-    // Get both input
-    cout << "Enter first value" << endl;
-    cin >> dividend;
-    cout << "Enter second value" << endl;
-    cin >> divisor;
+    int quotient = enteredValues.valueOne / enteredValues.valueTwo;
+    int remainder = enteredValues.valueOne % enteredValues.valueTwo;
 
-    int quotient = dividend / divisor;
-    int remainder = dividend % divisor;
-
-    cout << dividend << " / " << divisor << " = " << quotient << " with remainder of " << remainder << "\n" << endl;
+    cout << enteredValues.valueOne << " / " << enteredValues.valueTwo << " = " << quotient << " with remainder of " << remainder << "\n" << endl;
 }
 
 // Desc: Displays the calculator options
+// Input: N/A
+// Output: N/A
 void calculatorMenuSelection() {
 
     int calcChoice;
