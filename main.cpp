@@ -16,7 +16,6 @@ void displayMenu() {
 
 int main() {
 
-
     int menuChoice;
 
     do {

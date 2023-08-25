@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(BasicSyntax_and_ControlStructs main.cpp
         calculator_functions.h
         guess_the_number.h
-        tic_tac_toe_game.h)
+        tic_tac_toe_game.h
+)

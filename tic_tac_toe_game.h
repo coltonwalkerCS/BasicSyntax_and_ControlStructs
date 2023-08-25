@@ -4,7 +4,9 @@
 // Resource: https://thesharperdev.com/coding-the-perfect-tic-tac-toe-bot/
 
 #include <iostream>
+#include <utility>
 #include <vector>
+#include <typeinfo>
 using namespace std;
 
 struct MovePair {
@@ -23,8 +25,8 @@ int getRandomNumber(int minRange, int maxRange){
 
 class TicTacToeBoard {
 private:
-    vector<vector<char>> board;
     const int size = 3;
+    vector<vector<char>> board;
     vector<MovePair> moves;
 
 public:
@@ -32,10 +34,9 @@ public:
         board = vector<vector<char>>(size, vector<char>(size, '.'));
     }
 
-    void UpdateTicTacToeBoard(vector<vector<char>> newBoard, vector<MovePair> newMoves) {
-        board = newBoard;
-        moves = newMoves;
-    }
+    TicTacToeBoard(vector<vector<char>> board_input, vector<MovePair> moves_input) : board(board_input), moves(moves_input) {}
+
+    TicTacToeBoard(const TicTacToeBoard& newBoard) : board(newBoard.board), moves(newBoard.moves) {}
 
     void displayTicTacToeBoard() {
         for (int i = 0; i < size; i++) { // i is row
@@ -62,7 +63,7 @@ public:
         for (int row = 0; row < 3; row++) {
             vector<char> currRow = this->board[row];
             // Check each item is equal
-            if (currRow[0] == currRow[1] and currRow[1] == currRow[2]) {
+            if (currRow[0] == currRow[1] && currRow[1] == currRow[2] && currRow[0] != '.') {
                 // If X return player 1 won else player 2
                 if (currRow[0] == 'X') {
                     return 'X';
@@ -80,7 +81,7 @@ public:
             }
 
             // Check each item is equal
-            if (currCol[0] == currCol[1] and currCol[1] == currCol[2]) {
+            if (currCol[0] == currCol[1] && currCol[1] == currCol[2] && currCol[0] != '.') {
                 // If X return player 1 won else player 2
                 if (currCol[0] == 'X') {
                     return 'X';
@@ -91,7 +92,7 @@ public:
         }
 
         // Check backward diagonal (top left to bottom right)
-        if (this->board[0][0] == this->board[1][1] and this->board[1][1] == this->board[2][2]) {
+        if (this->board[0][0] == this->board[1][1] && this->board[1][1] == this->board[2][2] && this->board[0][0] != '.') {
             if (this->board[0][0] == 'X') {
                 return 'X';
             } else {
@@ -100,7 +101,7 @@ public:
         }
 
         // Check forward diagonal (bottom left to top right)
-        if (this->board[2][0] == this->board[1][1] and this->board[1][1] == this->board[0][2]) {
+        if (this->board[2][0] == this->board[1][1] && this->board[1][1] == this->board[0][2] && this->board[2][0] != '.') {
             if (this->board[0][0] == 'X') {
                 return 'X';
             } else {
@@ -155,23 +156,25 @@ public:
     }
 
     TicTacToeBoard copy() {
-        TicTacToeBoard newBoard;
-        newBoard.board = this->board;
-        newBoard.moves = this->moves;
-        return newBoard;
+        return TicTacToeBoard(*this);
     }
 };
 
-class RandomBot {
+// -------- BOTS ------------ //
+class Bot {
+public:
+    virtual ~Bot() {};
+    virtual MovePair SelectMove(TicTacToeBoard board) = 0;
+};
+
+class RandomBot : public Bot {
 private:
-    int player;
+    char player;
 
 public:
-    RandomBot(int player_type) {
-        player = player_type;
-    }
+    RandomBot(char playerPiece) : player(playerPiece) {}
 
-    MovePair SelectMove(TicTacToeBoard board) {
+    MovePair SelectMove(TicTacToeBoard board) override {
         MovePair newMove;
         vector<MovePair> legalMoves = board.getAllLegalMoves();
         int numLegalMoves = static_cast<int>(legalMoves.size());
@@ -183,6 +186,45 @@ public:
 
 };
 
+class OneMoveDeepBot : public Bot {
+private:
+    char player;
+
+public:
+    OneMoveDeepBot(char playerPiece) : player(playerPiece) {}
+
+    MovePair SelectMove(TicTacToeBoard board) override {
+        MovePair newMove;
+        vector<MovePair> legalMoves = board.getAllLegalMoves();
+        int numLegalMoves = static_cast<int>(legalMoves.size());
+
+        // See if there is a move which will win the game
+        // if so choose it else get a random move
+        for (int i = 0; i < numLegalMoves; i++) {
+            int tempRow = legalMoves[i].row;
+            int tempCol = legalMoves[i].col;
+
+            TicTacToeBoard newBoard = board.copy();
+            newBoard.makeMove(tempRow, tempCol, this->player);
+
+            if (newBoard.is_winner() == this->player) {
+                newMove.row = tempRow;
+                newMove.col = tempCol;
+                return  newMove;
+            }
+        }
+        // TODO: FIND OUT WHY BOT CHOOSES 0, 0 sometimes even when not in legal moves
+        // Issue when bot chooses 0, 0 which is not a legal move
+
+        int randMoveLoc = getRandomNumber(0, numLegalMoves);
+
+        newMove.row = legalMoves[randMoveLoc].row;
+        newMove.col = legalMoves[randMoveLoc].col;
+        return newMove;
+    }
+};
+
+// -------- END BOTS ------------ //
 
 // Desc: Intro display for tic tac toe
 // Input: N/A
@@ -190,30 +232,54 @@ public:
 void ticTacToeMenuDisplay() {
     cout << "Hello, this is the menu tic tac toe game!" << endl;
     cout << "1: Random-Selection Bot" << endl;
-    cout << "2: Perfect-Play Bot" << endl;
+    cout << "2: One-Move-Deep Bot" << endl;
     cout << "3: Exit \n" << endl;
 }
 
 char swapPlayers(char currPlayer) {
     char newPlayer;
     if (currPlayer == 'X'){
-        newPlayer = '0';
+        newPlayer = 'O';
     }else{
         newPlayer = 'X';
     }
     return newPlayer;
 }
 
+MovePair getPlayerMove(TicTacToeBoard board) {
+    bool isValidMove;
+    MovePair currentMove;
+    do {
+        // Set to false then find if valid
+        isValidMove = false;
+
+        cout << "Input your move." << endl;
+        cout << "Row:" << endl;
+        cin >> currentMove.row;
+        cout << "Col:" << endl;
+        cin >> currentMove.col;
+
+        // Check is valid move
+        vector<MovePair> legalMoves = board.getAllLegalMoves();
+        for (int move = 0; move < legalMoves.size(); move++) {
+            if (legalMoves[move].row == currentMove.row && legalMoves[move].col == currentMove.col ){
+                isValidMove = true;
+                break;
+            }
+        }
+        if (!isValidMove) {
+            cout << "INVALID MOVE" << endl;
+        }
+
+    } while (!isValidMove);
+    return currentMove;
+}
+
 // Game logic
-void PlayGame(char playerPiece){
-    // Set bot piece
-    char botPiece = 'X';
-    if (playerPiece == 'X') {
-        botPiece = 'O';
-    }
+void PlayGame(char playerPiece, Bot *gameBot){
 
     TicTacToeBoard board = TicTacToeBoard();
-    RandomBot RandoBot(botPiece);
+
 
     char currentPlayer = 'X';
     char winner;
@@ -222,30 +288,10 @@ void PlayGame(char playerPiece){
         MovePair currentMove;
 
         if (playerPiece == currentPlayer) {
-            bool isValidMove;
-            do {
-                // Set to false then find if valid
-                isValidMove = false;
-
-                cout << "Input your move." << endl;
-                cout << "Row:" << endl;
-                cin >> currentMove.row;
-                cout << "Col:" << endl;
-                cin >> currentMove.col;
-
-                // Check is valid move
-                // TODO: FIX FOR LOOP? - Not sure what range-based is
-                vector<MovePair> legalMoves = board.getAllLegalMoves();
-                for (int move = 0; move < legalMoves.size(); move++) {
-                    if (legalMoves[move].row == currentMove.row && legalMoves[move].col == currentMove.col ){
-                        isValidMove = true;
-                        break;
-                    }
-                }
-
-            } while (!isValidMove);
+            currentMove = getPlayerMove(board);
         } else {
-            currentMove = RandoBot.SelectMove(board);
+            currentMove = gameBot->SelectMove(board);
+            cout << "Bots Move: " << currentMove.row << ", " << currentMove.col << endl;
         }
 
         // Update board & display
@@ -269,6 +315,7 @@ void PlayGame(char playerPiece){
     } else {
         cout << "The winner is player " << winner << "!" << endl;
     }
+    board.displayTicTacToeBoard();
     cout << "Thanks for playing!" << endl;
 }
 
@@ -288,15 +335,26 @@ char getPlayerPiece(){
     return playerPiece;
 }
 
+char getBotPiece(char playerPiece) {
+    char botPiece = 'X';
+    if (playerPiece == 'X') {
+        botPiece = 'O';
+    }
+    return botPiece;
+}
+
 // Desc: Tic Tac Toe game prompt logic
 // Input: N/A
 // Output: N/A
 void main_TicTacToe(){
 
+
     int menuChoice;
 
     do {
         char playerPiece;
+        char botPiece;
+        Bot* gameBot = nullptr;
 
         ticTacToeMenuDisplay();
         cin >> menuChoice;
@@ -304,10 +362,15 @@ void main_TicTacToe(){
         switch (menuChoice) {
             case 1:
                 playerPiece = getPlayerPiece();
-                PlayGame(playerPiece);
+                botPiece = getBotPiece(playerPiece);
+                gameBot = new RandomBot(botPiece);
+                PlayGame(playerPiece, gameBot);
                 break;
             case 2:
-                cout << "Perfect bot is currently not available" << endl;
+                playerPiece = getPlayerPiece();
+                botPiece = getBotPiece(playerPiece);
+                gameBot = new OneMoveDeepBot(botPiece);
+                PlayGame(playerPiece, gameBot);
                 break;
         }
 
