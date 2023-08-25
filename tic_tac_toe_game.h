@@ -17,8 +17,8 @@ struct MovePair {
 int getRandomNumber(int minRange, int maxRange){
     random_device rd;
     mt19937 gen(rd());
-
-    uniform_int_distribution<> distribution(minRange, maxRange);
+    // Min : Max (excluding max)
+    uniform_int_distribution<> distribution(minRange, maxRange-1);
 
     return distribution(gen);
 }
@@ -213,13 +213,16 @@ public:
                 return  newMove;
             }
         }
-        // TODO: FIND OUT WHY BOT CHOOSES 0, 0 sometimes even when not in legal moves
-        // Issue when bot chooses 0, 0 which is not a legal move
 
         int randMoveLoc = getRandomNumber(0, numLegalMoves);
 
         newMove.row = legalMoves[randMoveLoc].row;
         newMove.col = legalMoves[randMoveLoc].col;
+
+        if (newMove.row == 0 && newMove.col == 0) {
+            cout << "FROM " << randMoveLoc << endl;
+            cout << "Row: " << legalMoves[randMoveLoc].row << ", Col " << legalMoves[randMoveLoc].col << endl;
+        }
         return newMove;
     }
 };
