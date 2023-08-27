@@ -1,7 +1,6 @@
 //
 // Created by Cole Walker on 8/22/23.
 //
-// Resource: https://thesharperdev.com/coding-the-perfect-tic-tac-toe-bot/
 
 #include <iostream>
 #include <utility>
