@@ -10,8 +10,9 @@
 using namespace std;
 
 struct MovePair {
-    int row;
-    int col;
+    // To represent an un initialized invalid move
+    int row = -1;
+    int col = -1;
 };
 
 int getRandomNumber(int minRange, int maxRange){
@@ -37,6 +38,18 @@ public:
     TicTacToeBoard(vector<vector<char>> board_input, vector<MovePair> moves_input) : board(board_input), moves(moves_input) {}
 
     TicTacToeBoard(const TicTacToeBoard& newBoard) : board(newBoard.board), moves(newBoard.moves) {}
+
+    int numMoves() {
+        return moves.size();
+    }
+
+    char nextPiece () {
+        char nextPiece = 'X';
+        if (moves.size() % 2 == 1) {
+            nextPiece = 'O';
+        }
+        return nextPiece;
+    }
 
     void displayTicTacToeBoard() {
         for (int i = 0; i < size; i++) { // i is row
@@ -102,7 +115,7 @@ public:
 
         // Check forward diagonal (bottom left to top right)
         if (this->board[2][0] == this->board[1][1] && this->board[1][1] == this->board[0][2] && this->board[2][0] != '.') {
-            if (this->board[0][0] == 'X') {
+            if (this->board[2][0] == 'X') {
                 return 'X';
             } else {
                 return 'O';
@@ -227,6 +240,182 @@ public:
     }
 };
 
+class TwoMoveDeepBot : public Bot {
+private:
+    char player;
+
+public:
+    TwoMoveDeepBot(char playerPiece) : player(playerPiece) {}
+
+    MovePair SelectMove(TicTacToeBoard board) override {
+        MovePair newMove;
+        MovePair losingMove;
+        vector<MovePair> legalMovesFirst = board.getAllLegalMoves();
+        int numLegalMoves = static_cast<int>(legalMovesFirst.size());
+
+        // See if there is a move which will win the game
+        // if so choose it else get a random move
+        for (int i = 0; i < numLegalMoves; i++) {
+            int tempRow = legalMovesFirst[i].row;
+            int tempCol = legalMovesFirst[i].col;
+
+            TicTacToeBoard newBoard = board.copy();
+            newBoard.makeMove(tempRow, tempCol, this->player);
+
+            if (newBoard.is_winner() == this->player) {
+                newMove.row = tempRow;
+                newMove.col = tempCol;
+                return  newMove;
+            }
+
+            // Get second level deep move
+            // MovePair newMoveSecond;
+            char nextPiece = 'O';
+            if (this->player == 'O') {
+                nextPiece = 'X';
+            }
+
+            vector<MovePair> legalMovesSecond = newBoard.getAllLegalMoves();
+            int numLegalMovesSecond = static_cast<int>(legalMovesSecond.size());
+            // Check if there is a next move that can allow the user to win
+
+            for (int j = 0; j < numLegalMovesSecond; j++) {
+                int tempRowSec = legalMovesSecond[j].row;
+                int tempColSec = legalMovesSecond[j].col;
+
+                TicTacToeBoard newBoardSecond = newBoard.copy();
+
+                newBoardSecond.makeMove(tempRowSec, tempColSec, nextPiece);
+
+                if (newBoardSecond.is_winner() == nextPiece){
+                    losingMove.row = tempRowSec;
+                    losingMove.col = tempColSec;
+                }
+
+            }
+
+        }
+
+        // If opponent has winning move block it
+        if (losingMove.row != -1) {
+            return losingMove;
+        }
+
+        // Else return a random move
+        int randMoveLoc = getRandomNumber(0, numLegalMoves);
+
+        newMove.row = legalMovesFirst[randMoveLoc].row;
+        newMove.col = legalMovesFirst[randMoveLoc].col;
+
+        if (newMove.row == 0 && newMove.col == 0) {
+            cout << "FROM " << randMoveLoc << endl;
+            cout << "Row: " << legalMovesFirst[randMoveLoc].row << ", Col " << legalMovesFirst[randMoveLoc].col << endl;
+        }
+        return newMove;
+    }
+};
+
+class Choice {
+private:
+    MovePair move;
+    int value;
+    int depth;
+public:
+    Choice(MovePair move, int value, int depth) : move(move), value(value), depth(depth) {}
+
+    Choice(const Choice& newChoice) : move(newChoice.move), value(newChoice.value), depth(newChoice.depth) {}
+
+    void setMove(MovePair newMove) {
+        move = newMove;
+    }
+
+    MovePair getMove() {
+        return move;
+    }
+
+    int getValue() {
+        return value;
+    }
+
+    Choice copy() {
+        return Choice(*this);
+    }
+};
+
+class PerfectBot : public Bot {
+private:
+    char player;
+
+public:
+    PerfectBot(char playerPiece) : player(playerPiece) {}
+
+    Choice minimax(TicTacToeBoard board, bool isMax, char currentPlayer, int depth) {
+
+        char opponentPiece = 'O';
+        if (this->player == 'O') {
+            opponentPiece = 'X';
+        }
+
+        char winner = board.is_winner();
+        if (winner == this->player) {
+            return {board.lastMove(), 10 - depth, depth};
+        } else if (winner == opponentPiece) {
+            return {board.lastMove(), -10 + depth, depth};
+        } else if (board.numMoves() == 9) {
+            return {board.lastMove(), 0, depth};
+        }
+
+        // Call minimax otherwise
+        vector<Choice> potentialMoves;
+        vector<MovePair> legalMoves = board.getAllLegalMoves();
+
+        for (int i = 0; i < legalMoves.size(); i++) {
+            int tempRow = legalMoves[i].row;
+            int tempCol = legalMoves[i].col;
+
+            TicTacToeBoard newBoard = board.copy();
+            newBoard.makeMove(tempRow, tempCol, currentPlayer);
+
+            Choice result = this->minimax(newBoard, !isMax, newBoard.nextPiece(), depth+1);
+            result.setMove(newBoard.lastMove());
+            potentialMoves.push_back(result);
+        }
+
+        // Temp for max and min
+
+        MovePair temp;
+
+        Choice maxChoice(temp, -100,0);
+        int maxValue = -100;
+        Choice minChoice(temp, 100,0);
+        int minValue = 100;
+
+        Choice potentialChoice (temp, 0, 0);
+
+        for (int i = 0; i < potentialMoves.size(); i++){
+            potentialChoice = potentialMoves[i].copy();
+            if (isMax && potentialChoice.getValue() > maxValue) {
+                maxChoice = potentialChoice.copy();
+                maxValue = potentialChoice.getValue();
+            } else if (not isMax && potentialChoice.getValue() < minValue) {
+                minChoice = potentialChoice.copy();
+                minValue = potentialChoice.getValue();
+            }
+        }
+
+        if (isMax) {
+            return maxChoice;
+        } else {
+            return minChoice;
+        }
+    }
+
+    MovePair SelectMove(TicTacToeBoard board) override {
+        Choice choice = this->minimax(board, true, this->player, 0);
+        return choice.getMove();
+    }
+};
+
 // -------- END BOTS ------------ //
 
 // Desc: Intro display for tic tac toe
@@ -236,7 +425,9 @@ void ticTacToeMenuDisplay() {
     cout << "Hello, this is the menu tic tac toe game!" << endl;
     cout << "1: Random-Selection Bot" << endl;
     cout << "2: One-Move-Deep Bot" << endl;
-    cout << "3: Exit \n" << endl;
+    cout << "3: Two-Move-Deep Bot" << endl;
+    cout << "4: Perfect Bot" << endl;
+    cout << "5: Exit \n" << endl;
 }
 
 char swapPlayers(char currPlayer) {
@@ -375,8 +566,20 @@ void main_TicTacToe(){
                 gameBot = new OneMoveDeepBot(botPiece);
                 PlayGame(playerPiece, gameBot);
                 break;
+            case 3:
+                playerPiece = getPlayerPiece();
+                botPiece = getBotPiece(playerPiece);
+                gameBot = new TwoMoveDeepBot(botPiece);
+                PlayGame(playerPiece, gameBot);
+                break;
+            case 4:
+                playerPiece = getPlayerPiece();
+                botPiece = getBotPiece(playerPiece);
+                gameBot = new PerfectBot(botPiece);
+                PlayGame(playerPiece, gameBot);
+                break;
         }
 
-    } while (menuChoice != 3);
+    } while (menuChoice != 4);
 
 }
