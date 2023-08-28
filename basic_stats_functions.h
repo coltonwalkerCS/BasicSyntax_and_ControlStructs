@@ -6,11 +6,34 @@
 #include <utility>
 #include <sstream>
 #include <vector>
+#include <string>
 #include <typeinfo>
 using namespace std;
 
 // Declaration
 void printInputNumbers(vector<int>);
+
+// From a string to vector<int>
+vector<int> splitString(const string& input, char deliminator = ' ') {
+    vector<string> stringNumbers;
+    size_t startPos = 0;
+    size_t endPos;
+
+    while ((endPos = input.find(deliminator, startPos)) != string::npos) {
+        stringNumbers.push_back(input.substr(startPos, endPos - startPos));
+        startPos = endPos+1;
+    }
+    stringNumbers.push_back(input.substr(startPos));
+
+    vector<int> intNumbers;
+
+    for(int i = 0; i < stringNumbers.size(); i++){
+        intNumbers.push_back(stoi(stringNumbers[i]));
+    }
+
+    return intNumbers;
+}
+
 
 // Desc: Get list of number from which to get values
 // Input: N/A
@@ -19,25 +42,18 @@ vector<int> getListOfNumbers(){
     cout << "Enter the list of numbers separated by spaces" << endl;
     cout << "Ex: '1 22 23 43 443 212 494 14 4 84 922'" << endl;
 
-    vector<int> vectorOfInts;
-
     string userInput;
     cin.ignore();
     getline(cin, userInput);
 
-    // TODO: SEE IF THERE IS A BETTER WAY THAN -48
-    for (unsigned char c : userInput) {
-        if (c != ' ') {
-            vectorOfInts.push_back(static_cast<int>(c)-48);
-        }
-    }
+    vector<int> vectorOfInts = splitString(userInput);
 
     return vectorOfInts;
 }
 
 // Desc: Get mean
-// Input: N/A
-// Output: N/A
+// Input: List of integers (vector)
+// Output: Mean (Int)
 double getMean(vector<int> inputNumbers) {
     int total = 0;
     int sizeOfList = static_cast<int>(inputNumbers.size());
@@ -49,6 +65,54 @@ double getMean(vector<int> inputNumbers) {
     return mean;
 }
 
+// Quick sort & functions
+int partition(vector<int>& array, int low, int high) {
+    int pivot = array[high];
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++){
+        if(array[j] <= pivot) {
+            i++;
+            swap(array[i], array[j]);
+        }
+    }
+
+    swap(array[i+1], array[high]);
+    return i+1;
+}
+
+
+void quickSort(vector<int>& array, int low, int high) {
+    if (low < high) {
+        int par = partition(array, low, high);
+        quickSort(array, low, par-1);
+        quickSort(array, par+1, high);
+    }
+}
+
+// End quick sort functions
+
+// Desc: Get median
+// Input: Vector of integers
+// Output: Median of the vector of ints
+
+double getMedian(vector<int> inputNumbers) {
+    double median;
+
+    int sizeOfNumbers = static_cast<int>(inputNumbers.size());
+
+    // Need to sort
+    quickSort(inputNumbers, 0, sizeOfNumbers-1);
+
+    if (sizeOfNumbers % 2 == 1){
+        median = static_cast<double>(inputNumbers[sizeOfNumbers/2]);
+    } else {
+        auto midNum1 = static_cast<double>(inputNumbers[(sizeOfNumbers-1)/2]);
+        auto midNum2 = static_cast<double>(inputNumbers[sizeOfNumbers/2]);
+        median = (midNum1 + midNum2) / 2.0;
+    }
+    return median;
+}
 
 void printInputNumbers(vector<int> inputNumbers) {
     for (int i = 0; i < inputNumbers.size(); i++) {
@@ -90,6 +154,7 @@ void main_BasicStatsCalc(){
 
         // Variable inits
         double mean;
+        double median;
 
         switch (menuChoice) {
             case 1:
@@ -98,13 +163,14 @@ void main_BasicStatsCalc(){
             case 2:
                 cout << "The mean of: " << endl;
                 printInputNumbers(inputNumbers);
-
                 mean = getMean(inputNumbers);
-
-                cout << "is: " << mean << endl;
+                cout << "is: " << mean << "\n" << endl;
                 break;
             case 3:
-                cout << "3" << endl;
+                cout << "The median of: " << endl;
+                printInputNumbers(inputNumbers);
+                median = getMedian(inputNumbers);
+                cout << "is: " << median << "\n" <<endl;
                 break;
             case 4:
                 cout << "4" << endl;
