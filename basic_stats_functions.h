@@ -81,7 +81,7 @@ int partition(vector<int>& array, int low, int high) {
     return i+1;
 }
 
-
+// Quicksort algorithm
 void quickSort(vector<int>& array, int low, int high) {
     if (low < high) {
         int par = partition(array, low, high);
@@ -95,7 +95,6 @@ void quickSort(vector<int>& array, int low, int high) {
 // Desc: Get median
 // Input: Vector of integers
 // Output: Median of the vector of ints
-
 double getMedian(vector<int> inputNumbers) {
     double median;
 
@@ -114,6 +113,82 @@ double getMedian(vector<int> inputNumbers) {
     return median;
 }
 
+// Desc: Get mode
+// Input: Vector of integers
+// Output: Mode of the vector of ints
+int getMode(vector<int> inputNumbers) {
+
+    int maxVal = *max_element(inputNumbers.begin(), inputNumbers.end());
+
+    int cntSize = maxVal+1;
+
+    // Initialize counter arr with 0's
+    int counter[cntSize];
+    for (int i = 0; i < cntSize; i++){
+        counter[i] = 0;
+    }
+
+    // Go through vector and count number elements
+    for (int i = 0; i < inputNumbers.size(); i++){
+        counter[inputNumbers[i]]++;
+    }
+
+    // Go through counter and find the index with the largest value
+    int mode = 0;
+    int temp = counter[0];
+    int sameMax = 0;
+    for (int i = 1; i < cntSize; i++){
+        if (counter[i] > temp) {
+            mode = i;
+            temp = counter[i];
+            sameMax = 0;
+        }else if (counter[i] == temp){
+            sameMax += 1;
+        }
+    }
+    if (sameMax != 0) {
+        mode = 0;
+    }
+    return mode;
+}
+
+// Desc: Gets the standard deviation for a set of numbers
+// Input: List of numbers (Vector<int>)
+// Output: Standard deviation (double)
+double getStandardDeviation(vector<int> inputNumbers) {
+    double mean = getMean(inputNumbers);
+    double squaredDiffSum = 0.0;
+
+    for (double val : inputNumbers) {
+        double difference = val - mean;
+        squaredDiffSum += difference * difference;
+    }
+    double meanSquaredDiff = squaredDiffSum / static_cast<double>(inputNumbers.size());
+
+    return sqrt(meanSquaredDiff);
+}
+
+// Desc: Gets the range for a data set
+// Input: List of numbers (Vector<int>)
+// Output: Range (int)
+int getRange(vector<int> inputNumbers) {
+    if (inputNumbers.size() < 2) {
+        cout << "Error: Invalid input to range finder" << endl;
+    }
+    int max = inputNumbers[0];
+    int min = inputNumbers[0];
+    for (int val : inputNumbers) {
+        if (val > max) {
+            max = val;
+        }
+        if (val < min) {
+            min = val;
+        }
+    }
+    return max - min;
+}
+
+// Desc: Print the user inputted numbers
 void printInputNumbers(vector<int> inputNumbers) {
     for (int i = 0; i < inputNumbers.size(); i++) {
         cout << inputNumbers[i] << " ";
@@ -155,6 +230,9 @@ void main_BasicStatsCalc(){
         // Variable inits
         double mean;
         double median;
+        int mode;
+        double stdDev;
+        int range;
 
         switch (menuChoice) {
             case 1:
@@ -173,19 +251,25 @@ void main_BasicStatsCalc(){
                 cout << "is: " << median << "\n" <<endl;
                 break;
             case 4:
-                cout << "4" << endl;
+                cout << "The mode of: " << endl;
+                printInputNumbers(inputNumbers);
+                mode = getMode(inputNumbers);
+                cout << "is: " << mode << "\n" <<endl;
                 break;
             case 5:
-                cout << "5" << endl;
+                cout << "The standard deviation of: " << endl;
+                printInputNumbers(inputNumbers);
+                stdDev = getStandardDeviation(inputNumbers);
+                cout << "is: " << stdDev << "\n" <<endl;
                 break;
             case 6:
-                cout << "6" << endl;
-                break;
-            case 7:
-                cout << "7" << endl;
+                cout << "The range of: " << endl;
+                printInputNumbers(inputNumbers);
+                range = getRange(inputNumbers);
+                cout << "is: " << range << "\n" <<endl;
                 break;
         }
 
-    } while (menuChoice != 8);
+    } while (menuChoice != 7);
 
 }

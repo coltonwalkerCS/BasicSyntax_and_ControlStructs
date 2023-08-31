@@ -7,4 +7,6 @@ add_executable(BasicSyntax_and_ControlStructs main.cpp
         calculator_functions.h
         guess_the_number.h
         tic_tac_toe_game.h
+        "Analysis of Bonds/mainDataAnalytics.cpp"
+        "Analysis of Bonds/mainDataAnalytics.h"
 )
