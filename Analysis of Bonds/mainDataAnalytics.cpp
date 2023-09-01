@@ -5,6 +5,16 @@
 #include "mainDataAnalytics.h"
 
 int main() {
-    importingCSVFile();
+    vector<BondData> bondDataRecords = importingCSVFile();
+
+    vector<double> adjClose;
+
+    for (const BondData& bond : bondDataRecords) {
+        adjClose.push_back(bond.adjClose);
+    }
+
+    vector<tm> dateTimes;
+    dateTimes = getDateTimeOfBonds(bondDataRecords);
+
     return 1;
 }
