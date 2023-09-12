@@ -11,4 +11,5 @@ add_executable(BasicSyntax_and_ControlStructs main.cpp
         dice_rolling_simulator.h
         dice_rolling_simulator.h
         dice_rolling_simulator.h
+        monte_carlo_distribution.h
 )

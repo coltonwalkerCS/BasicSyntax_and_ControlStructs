@@ -4,6 +4,7 @@
 #include "tic_tac_toe_game.h"
 #include "basic_stats_functions.h"
 #include "dice_rolling_simulator.h"
+#include "monte_carlo_distribution.h"
 
 using namespace std;
 
@@ -15,7 +16,8 @@ void displayMenu() {
     cout << "3: Tic Tac Toe Game" << endl;
     cout << "4: Basic Stats Calc" << endl;
     cout << "5: Roll Dice" << endl;
-    cout << "6: EXIT \n" << endl;
+    cout << "6: Run Monte Carlo Sim" << endl;
+    cout << "7: EXIT \n" << endl;
 }
 
 int main() {
@@ -40,6 +42,9 @@ int main() {
                 break;
             case 5:
                 rollDiceOneHundredTimes();
+                break;
+            case 6:
+                monteCarloMenu();
                 break;
         }
     } while (menuChoice != 5);
